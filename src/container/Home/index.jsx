@@ -20,6 +20,67 @@ const ajax = (url, type, param = {}, cb) => {
   })
 }
 
+class RandomPoint extends Component {
+  constructor() {
+    super();
+    this.state = {
+      pointList: [],
+      pointListLen: 50
+    }
+  }
+
+  componentWillMount() {
+    this.genPoints();
+  }
+  
+  genPoints(map = 500) {
+    let points = [], item;
+    while (points.length < 50) {
+      let x = Math.random() * map, y = Math.random() * map;
+      if (points.length < 1) item = { x, y };
+      if (points.every(p => Math.sqrt(Math.pow(Math.abs(x - p.x), 2) + Math.pow(Math.abs(y - p.y), 2)) >= 16))
+        item = { x, y };
+  
+      points.push(item);
+    }
+    this.setState({pointList: points});
+  }
+
+  movePoint() {
+    const _this = this;
+    const dom = this.refs.redPoint;
+    let points = JSON.parse(JSON.stringify(_this.state.pointList));
+    let _index, current;
+    const t = 500;
+    dom.style.transform = `transition all ${t / 1000}s linear`;
+    let timer = setInterval(() => {
+      _index = Math.ceil(points.length * Math.random()) - 1;
+      console.log(points.length,_index)
+      current = points[_index];
+      dom.style.left = current.x  + 'px';
+      dom.style.top = current.y + 'px';
+      points.splice(_index, 1);
+      _this.setState({ pointListLen: points.length });
+      if (points.length < 1) clearInterval(timer);
+    }, t);
+  }
+
+  render() {
+    return <div>
+      <div className="pointBox" ref="pointBox">
+        <div className="point-move" ref="redPoint"></div>
+        {
+          this.state.pointList.map((p, i) => <div key={`point->${i}`} p-data={`x:${p.x},y:${p.y}`}
+              className="point" style={{ left: p.x + 'px', top: p.y + 'px' }} ></div>)
+        }
+        <h1 className="bg">还剩{this.state.pointListLen}个没跑完.</h1>
+      </div>
+      <div className="btn" onClick={this.genPoints.bind(this)}>random points</div>
+      <div className="btn" onClick={this.movePoint.bind(this)}>move</div>
+    </div> 
+  }
+}
+
 class App extends Component {
   constructor() {
     super();
@@ -68,6 +129,7 @@ class App extends Component {
     return (
       <div>
         <h1 className="title">GraphQL-前端demo</h1>
+
         <div className="main">
           <div className="course list">
             <h3>课程列表</h3>
@@ -83,7 +145,7 @@ class App extends Component {
             <ul>
               {
                 students.length < 1 ? <li>暂无数据。。。</li> :
-                  students.map((s,index) => <li key={`student->${index}`}>姓名：{s.name}，性别：{s.sex}，年龄：{s.age}</li>)
+                  students.map(s => <li key={`student->${s._id}`}>姓名：{s.name}，性别：{s.sex}，年龄：{s.age}</li>)
               }
             </ul>
           </div>
@@ -93,6 +155,7 @@ class App extends Component {
           <div className="btn" onClick={this.getStudents.bind(this)}>班级学生列表</div>
           <div className="btn" onClick={this.getAllData.bind(this)}>graphQL查询</div>
         </div>
+        <RandomPoint />
         <div className="toast"></div>
       </div>
     );
