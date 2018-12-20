@@ -34,16 +34,41 @@ li{
 .list li:hover{
   background: #1ac4f9
 }
-.btnbox{
-  text-align: center;
-}
-.btnbox .btn{
-  width: 500px;
+
+.btn{
+  display: inline-block;
+  width: 200px;
   height: 40px;
-  margin: 10px auto;
+  margin: 10px;
+  text-align: center;
   border-radius: 10px;
   background: #1ac4f9;
   color: #ffffff;
   line-height: 40px;
   cursor: pointer;
+}
+.pointBox{
+  width: 500px;
+  height: 500px;
+  margin: 0 auto;
+  background-color: rgba(0,0,0,.1);
+  position: relative;
+}
+.pointBox h1{
+  opacity: .15;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+}
+.pointBox div{
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: green;
+  transition: all .3s ease-in-out;
+}
+.pointBox .point-move{
+  background-color: red;
+  z-index: 3;
 }
