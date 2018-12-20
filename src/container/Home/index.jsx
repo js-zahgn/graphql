@@ -13,7 +13,7 @@ const ajax = (url, type, param = {}, cb) => {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(param)
-    } 
+    }
   }
   fetch(url, postBody).then(r => r.json()).then(res => {
     cb(res)
@@ -25,44 +25,52 @@ class RandomPoint extends Component {
     super();
     this.state = {
       pointList: [],
-      pointListLen: 50
+      pointListLen: 50,
+      timer: null
     }
   }
 
   componentWillMount() {
     this.genPoints();
   }
-  
-  genPoints(map = 500) {
+
+  genPoints() {
     let points = [], item;
+    if (this.state.timer != null) {
+      clearInterval(this.state.timer);
+    }
     while (points.length < 50) {
-      let x = Math.random() * map, y = Math.random() * map;
+      let x = Math.random() * 500, y = Math.random() * 500;
       if (points.length < 1) item = { x, y };
       if (points.every(p => Math.sqrt(Math.pow(Math.abs(x - p.x), 2) + Math.pow(Math.abs(y - p.y), 2)) >= 16))
         item = { x, y };
-  
+
       points.push(item);
     }
-    this.setState({pointList: points});
+    this.setState({ pointList: points });
   }
 
   movePoint() {
     const _this = this;
     const dom = this.refs.redPoint;
     let points = JSON.parse(JSON.stringify(_this.state.pointList));
-    let _index, current;
+    let _index, current, timer;
     const t = 500;
+    if (_this.state.timer != null) {
+      clearInterval(_this.state.timer);
+    }
     dom.style.transform = `transition all ${t / 1000}s linear`;
-    let timer = setInterval(() => {
+    timer = setInterval(() => {
       _index = Math.ceil(points.length * Math.random()) - 1;
-      console.log(points.length,_index)
+      console.log(points.length, _index)
       current = points[_index];
-      dom.style.left = current.x  + 'px';
+      dom.style.left = current.x + 'px';
       dom.style.top = current.y + 'px';
       points.splice(_index, 1);
       _this.setState({ pointListLen: points.length });
       if (points.length < 1) clearInterval(timer);
     }, t);
+    _this.setState({timer});
   }
 
   render() {
@@ -70,14 +78,14 @@ class RandomPoint extends Component {
       <div className="pointBox" ref="pointBox">
         <div className="point-move" ref="redPoint"></div>
         {
-          this.state.pointList.map((p, i) => <div key={`point->${i}`} p-data={`x:${p.x},y:${p.y}`}
-              className="point" style={{ left: p.x + 'px', top: p.y + 'px' }} ></div>)
+          this.state.pointList.map((p, i) => <div key={`point->${i}`} className="point"
+            style={{ left: p.x + 'px', top: p.y + 'px' }} ></div>)
         }
         <h1 className="bg">还剩{this.state.pointListLen}个没跑完.</h1>
       </div>
       <div className="btn" onClick={this.genPoints.bind(this)}>random points</div>
       <div className="btn" onClick={this.movePoint.bind(this)}>move</div>
-    </div> 
+    </div>
   }
 }
 
@@ -125,7 +133,7 @@ class App extends Component {
   }
 
   render() {
-    const { courseList,students } = this.state;
+    const { courseList, students } = this.state;
     return (
       <div>
         <h1 className="title">GraphQL-前端demo</h1>
@@ -136,7 +144,7 @@ class App extends Component {
             <ul>
               {
                 courseList.length < 1 ? <li>暂无数据。。。</li> :
-                  courseList.map((c,index) => <li key={`course->${index}`}>课程：{c.title}，简介：{c.desc}</li>)
+                  courseList.map((c, index) => <li key={`course->${index}`}>课程：{c.title}，简介：{c.desc}</li>)
               }
             </ul>
           </div>
