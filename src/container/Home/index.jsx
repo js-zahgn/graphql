@@ -1,6 +1,50 @@
-import React, { Component } from 'react';
+import React, { Component,Fragment } from 'react';
+import ApolloClient from 'apollo-boost';
+import { ApolloProvider, Query } from 'react-apollo';
+import gql from 'graphql-tag';
 
-const ajax = (url, type, param = {}, cb) => {
+const client = new ApolloClient({uri: 'http://localhost:4008/graphql'});
+
+const GG_INFOS = gql`
+  query{
+    infos{
+      hobby
+      height
+    }
+  }
+`
+
+class GG extends Component{
+  render() {
+    return (
+      <ApolloProvider client={client}>
+        <Query query={GG_INFOS}>
+          {({ loading, error, data }) => {
+            if (loading) return <h4>loading...</h4>
+            if (error) console.error(error);
+            console.log(data.infos)
+            return (
+              <Fragment>
+                {
+                  data.infos.map(info => {
+                    return (
+                      <Fragment key={info.height + 'zheshiga'}>
+                        <span>{info.hobby.join(',')}</span>
+                        <p>{info.height}</p>
+                      </Fragment>
+                    )
+                  })
+                }
+              </Fragment>
+            )
+          }}
+        </Query>
+      </ApolloProvider>
+    )
+  }
+}
+
+const _ajax = (url, type, param = {}, cb) => {
   url = 'http://localhost:4008/' + url;
   let postBody = {};
   if (type !== 'post') {
@@ -15,9 +59,7 @@ const ajax = (url, type, param = {}, cb) => {
       body: JSON.stringify(param)
     }
   }
-  fetch(url, postBody).then(r => r.json()).then(res => {
-    cb(res)
-  })
+  fetch(url, postBody).then(r => r.json()).then(res => cb(res));
 }
 
 class RandomPoint extends Component {
@@ -70,7 +112,7 @@ class RandomPoint extends Component {
       _this.setState({ pointListLen: points.length });
       if (points.length < 1) clearInterval(timer);
     }, t);
-    _this.setState({timer});
+    _this.setState({ timer });
   }
 
   render() {
@@ -99,14 +141,34 @@ class App extends Component {
     }
   }
 
+  componentWillMount() {
+    const params = {
+      query: `query{
+        student{
+          name
+          sex
+          age
+        }
+        infos{
+          hobby
+          weight
+          height
+        }
+      }`
+    }
+    _ajax('graphql', 'post', params, res => {
+      console.log(res)
+    })
+  }
+
   getCourse() {
     const _this = this;
-    ajax('fetchCourse', res => _this.setState({ courseList: res.data }));
+    _ajax('fetchCourse', res => _this.setState({ courseList: res.data }));
   }
 
   getStudents() {
     const _this = this;
-    ajax('student', res => _this.setState({ students: res.data }));
+    _ajax('student', res => _this.setState({ students: res.data }));
   }
 
   getAllData() {
@@ -117,6 +179,7 @@ class App extends Component {
           name
           sex
           age
+          idInfo
         }
         course{
           title
@@ -124,7 +187,7 @@ class App extends Component {
         }
       }`
     }
-    ajax('graphql', 'post', params, res => {
+    _ajax('graphql', 'post', params, res => {
       _this.setState({
         students: res.data.student,
         courseList: res.data.course
@@ -164,6 +227,7 @@ class App extends Component {
           <div className="btn" onClick={this.getAllData.bind(this)}>graphQL查询</div>
         </div>
         <RandomPoint />
+        <GG></GG>
         <div className="toast"></div>
       </div>
     );
